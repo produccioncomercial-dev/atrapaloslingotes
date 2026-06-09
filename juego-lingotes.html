@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Atrapa los Lingotes</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;900&display=swap");
+
+    :root {
+      --gold: #EDC500;
+      --gold-2: #ffd95b;
+      --brand-blue: #123150;
+      --ink: #15110a;
+      --muted: #6c6254;
+      --paper: #fff9e7;
+      --red: #d91f18;
+      --blue: #123150;
+      --green: #108a51;
+      --shadow: 0 18px 50px rgba(32, 22, 0, .22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(237, 197, 0, .28), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(18, 49, 80, .28), transparent 24%),
+        linear-gradient(145deg, #f7fbff 0%, #fffef8 44%, #f8e5ac 100%);
+      color: var(--ink);
+      font-family: Raleway, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      touch-action: none;
+      user-select: none;
+    }
+
+    button {
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .app {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      gap: 12px;
+    }
+
+    .app.menu-mode {
+      grid-template-rows: 1fr;
+      padding: 0;
+    }
+
+    .app.menu-mode .hud {
+      display: none;
+    }
+
+    .app.menu-mode .stage {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .hud {
+      z-index: 3;
+      display: grid;
+      grid-template-columns: minmax(92px, auto) minmax(150px, 1fr) minmax(70px, auto);
+      align-items: center;
+      gap: 10px;
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid rgba(112, 82, 0, .18);
+      border-radius: 8px;
+      background: rgba(18, 49, 80, .92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .stat {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .label {
+      color: rgba(255, 255, 255, .72);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .value {
+      color: #fff;
+      font-size: clamp(20px, 4.8vw, 32px);
+      font-weight: 950;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .goal-wrap {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .goal-copy {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: rgba(255, 255, 255, .76);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .meter {
+      position: relative;
+      height: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(108, 79, 0, .2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .meter-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #EDC500, #ffdc4d 62%, #18a766 100%);
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, .55), 0 0 18px rgba(237, 197, 0, .38);
+      transition: width .16s ease;
+    }
+
+    .meter-limit {
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      left: 100%;
+      width: 3px;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, .7);
+      transform: translateX(-2px);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(112, 82, 0, .16);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, .13)),
+        repeating-linear-gradient(90deg, rgba(237, 197, 0, .09) 0 1px, transparent 1px 56px);
+      box-shadow: var(--shadow);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(255, 249, 231, .76);
+      backdrop-filter: blur(12px);
+    }
+
+    .overlay[hidden] { display: none; }
+
+    .menu-overlay {
+      padding: clamp(18px, 5vw, 48px);
+      background:
+        radial-gradient(circle at 18% 14%, rgba(237, 197, 0, .32), transparent 26%),
+        radial-gradient(circle at 85% 68%, rgba(255, 255, 255, .12), transparent 30%),
+        linear-gradient(145deg, #123150 0%, #0b223a 56%, #061424 100%);
+      color: #fff;
+    }
+
+    .menu-card {
+      width: min(680px, 100%);
+      min-height: min(760px, 100%);
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      text-align: center;
+      padding-bottom: 72px;
+    }
+
+    .brand-logo {
+      position: absolute;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      width: min(190px, 44vw);
+      max-height: 64px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .28));
+      transform: translateX(-50%);
+    }
+
+    .game-title-image {
+      width: min(650px, 96vw);
+      max-height: min(390px, 42vh);
+      object-fit: contain;
+      filter: drop-shadow(0 22px 34px rgba(0, 0, 0, .3));
+    }
+
+    .menu-title {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      color: #fff;
+      font-size: clamp(34px, 9vw, 76px);
+      font-weight: 900;
+      line-height: .92;
+      text-transform: uppercase;
+    }
+
+    .instructions {
+      max-width: 54ch;
+      color: rgba(255, 255, 255, .84);
+      font-size: clamp(14px, 2.2vw, 18px);
+      font-weight: 300;
+      line-height: 1.45;
+    }
+
+    .menu-rules {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      width: min(600px, 100%);
+    }
+
+    .menu-rules .rule {
+      border-color: rgba(255, 255, 255, .16);
+      background: rgba(255, 255, 255, .08);
+      color: rgba(255, 255, 255, .84);
+      backdrop-filter: blur(8px);
+    }
+
+    .menu-rules .rule strong {
+      color: var(--gold);
+    }
+
+    .panel {
+      width: min(520px, 100%);
+      padding: 22px;
+      border: 1px solid rgba(86, 62, 0, .18);
+      border-radius: 8px;
+      background: rgba(255, 254, 248, .92);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    h1,
+    h2,
+    p { margin: 0; }
+
+    h1 {
+      font-size: clamp(30px, 8vw, 58px);
+      line-height: .92;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-top: 4px;
+      font-size: clamp(24px, 6vw, 44px);
+      line-height: 1;
+    }
+
+    .lead {
+      margin: 12px auto 18px;
+      max-width: 36ch;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0 18px;
+    }
+
+    .rule {
+      min-width: 0;
+      padding: 10px 7px;
+      border: 1px solid rgba(112, 82, 0, .16);
+      border-radius: 8px;
+      background: #fff4c5;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .rule strong {
+      display: block;
+      color: #8a5300;
+      font-size: 18px;
+    }
+
+    .primary {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--brand-blue);
+      color: #fff;
+      font-weight: 950;
+      box-shadow: 0 12px 30px rgba(21, 17, 10, .24);
+    }
+
+    .primary:active { transform: translateY(1px); }
+
+    .start-button {
+      min-height: 62px;
+      min-width: min(320px, 82vw);
+      padding: 0 34px;
+      background: linear-gradient(135deg, #ffe680 0%, var(--gold) 42%, #ffbf00 100%);
+      color: var(--brand-blue);
+      font-size: clamp(20px, 5vw, 32px);
+      letter-spacing: .04em;
+      box-shadow: 0 18px 38px rgba(237, 197, 0, .32), 0 4px 0 #9c7800;
+    }
+
+    .start-button::after {
+      content: "";
+      position: absolute;
+      inset: -80% auto -80% -45%;
+      width: 34%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .86), transparent);
+      transform: rotate(22deg);
+      animation: buttonShine 2.4s ease-in-out infinite;
+    }
+
+    .loader-content,
+    .countdown-content {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .loader-overlay,
+    .countdown-overlay,
+    .dice-overlay {
+      background:
+        radial-gradient(circle at 50% 30%, rgba(237, 197, 0, .26), transparent 30%),
+        linear-gradient(145deg, #123150, #061424);
+      color: #fff;
+    }
+
+    .loader-mark {
+      width: min(150px, 34vw);
+      aspect-ratio: 1;
+      animation: logoSpin 1s linear infinite;
+      filter: drop-shadow(0 18px 34px rgba(0, 0, 0, .32));
+    }
+
+    .loader-text {
+      font-size: clamp(18px, 4vw, 28px);
+      font-weight: 300;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .countdown-number {
+      display: grid;
+      place-items: center;
+      width: min(210px, 48vw);
+      aspect-ratio: 1;
+      border: 6px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: clamp(82px, 25vw, 150px);
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 0 44px rgba(237, 197, 0, .38), inset 0 0 34px rgba(237, 197, 0, .18);
+      animation: countdownPulse .92s ease-in-out infinite;
+    }
+
+    .countdown-title {
+      color: rgba(255, 255, 255, .84);
+      font-size: clamp(19px, 5vw, 34px);
+      font-weight: 300;
+      text-transform: uppercase;
+    }
+
+    .dice-zone {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .dice {
+      position: relative;
+      width: min(52vw, 260px);
+      aspect-ratio: 1;
+      border: 7px solid #fff;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #fff 0%, #fff7d2 100%);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .38), inset 0 0 0 7px var(--gold);
+      transition: transform .28s ease, filter .28s ease;
+    }
+
+    .dice.ready {
+      animation: breathe 1.25s ease-in-out infinite;
+      cursor: pointer;
+    }
+
+    .dice.rolling {
+      animation: rollDice 1.35s cubic-bezier(.18, .72, .18, 1) both;
+    }
+
+    .pip {
+      position: absolute;
+      display: none;
+      width: 18%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #16100a;
+      box-shadow: inset 2px 2px 5px rgba(255, 255, 255, .18);
+      transform: translate(-50%, -50%);
+    }
+
+    .dice[data-face="1"] .pip:nth-child(1),
+    .dice[data-face="2"] .pip:nth-child(2),
+    .dice[data-face="2"] .pip:nth-child(3),
+    .dice[data-face="3"] .pip:nth-child(1),
+    .dice[data-face="3"] .pip:nth-child(2),
+    .dice[data-face="3"] .pip:nth-child(3),
+    .dice[data-face="4"] .pip:nth-child(2),
+    .dice[data-face="4"] .pip:nth-child(3),
+    .dice[data-face="4"] .pip:nth-child(4),
+    .dice[data-face="4"] .pip:nth-child(5),
+    .dice[data-face="5"] .pip:nth-child(1),
+    .dice[data-face="5"] .pip:nth-child(2),
+    .dice[data-face="5"] .pip:nth-child(3),
+    .dice[data-face="5"] .pip:nth-child(4),
+    .dice[data-face="5"] .pip:nth-child(5),
+    .dice[data-face="6"] .pip:nth-child(2),
+    .dice[data-face="6"] .pip:nth-child(3),
+    .dice[data-face="6"] .pip:nth-child(4),
+    .dice[data-face="6"] .pip:nth-child(5),
+    .dice[data-face="6"] .pip:nth-child(6),
+    .dice[data-face="6"] .pip:nth-child(7) { display: block; }
+
+    .pip:nth-child(1) { left: 50%; top: 50%; }
+    .pip:nth-child(2) { left: 28%; top: 28%; }
+    .pip:nth-child(3) { left: 72%; top: 72%; }
+    .pip:nth-child(4) { left: 72%; top: 28%; }
+    .pip:nth-child(5) { left: 28%; top: 72%; }
+    .pip:nth-child(6) { left: 28%; top: 50%; }
+    .pip:nth-child(7) { left: 72%; top: 50%; }
+
+    .prize {
+      min-height: 38px;
+      color: var(--green);
+      font-size: clamp(22px, 6vw, 38px);
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .dice-title {
+      max-width: 16ch;
+      color: #fff;
+      font-size: clamp(30px, 8vw, 64px);
+      font-weight: 300;
+      line-height: 1.08;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .dice-overlay .prize {
+      color: var(--gold);
+      font-size: clamp(34px, 10vw, 82px);
+      min-height: 1.1em;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    }
+
+    .sound-toggle {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 5;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(21, 17, 10, .14);
+      border-radius: 50%;
+      background: rgba(18, 49, 80, .88);
+      box-shadow: 0 10px 24px rgba(21, 17, 10, .16);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      backdrop-filter: blur(10px);
+    }
+
+    .points-pop {
+      position: absolute;
+      z-index: 2;
+      color: #7b4500;
+      font-weight: 950;
+      pointer-events: none;
+      text-shadow: 0 2px 0 #fff1ad, 0 8px 20px rgba(71, 41, 0, .24);
+      animation: popUp .7s ease-out both;
+    }
+
+    @keyframes popUp {
+      from { opacity: 0; transform: translate(-50%, 8px) scale(.85); }
+      18% { opacity: 1; }
+      to { opacity: 0; transform: translate(-50%, -44px) scale(1.18); }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.04) rotate(2deg); }
+    }
+
+    @keyframes rollDice {
+      0% { transform: rotate(0) scale(1); filter: blur(0); }
+      25% { transform: rotate(130deg) scale(1.12); filter: blur(1px); }
+      55% { transform: rotate(410deg) scale(.94); }
+      80% { transform: rotate(650deg) scale(1.06); }
+      100% { transform: rotate(720deg) scale(1); filter: blur(0); }
+    }
+
+    @keyframes buttonShine {
+      0%, 45% { left: -45%; }
+      72%, 100% { left: 118%; }
+    }
+
+    @keyframes logoSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes countdownPulse {
+      0%, 100% { transform: scale(.95); opacity: .86; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+
+    @media (max-width: 560px) {
+      .app { gap: 8px; padding: 10px; }
+      .hud {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 8px;
+      }
+      .goal-wrap { grid-column: 1 / -1; grid-row: 2; }
+      .timer { justify-self: end; text-align: right; }
+      .panel { padding: 18px 14px; }
+      .rules { gap: 6px; }
+      .rule { padding: 8px 4px; font-size: 11px; }
+      .rule strong { font-size: 16px; }
+      .menu-rules { grid-template-columns: repeat(2, 1fr); }
+      .menu-card { gap: 10px; padding-bottom: 64px; }
+      .game-title-image { max-height: 34vh; }
+      .brand-logo { width: min(150px, 42vw); max-height: 50px; }
+      .sound-toggle { right: 10px; bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app menu-mode" id="app">
+    <section class="hud" aria-label="Marcador del juego">
+      <div class="stat">
+        <span class="label">Puntos</span>
+        <span class="value" id="score">0</span>
+      </div>
+      <div class="goal-wrap">
+        <div class="goal-copy">
+          <span>Meta para desbloquear dado</span>
+          <span><strong id="targetCopy">1150</strong> pts</span>
+        </div>
+        <div class="meter" aria-label="Progreso hacia la meta">
+          <div class="meter-fill" id="meterFill"></div>
+          <div class="meter-limit"></div>
+        </div>
+      </div>
+      <div class="stat timer">
+        <span class="label">Tiempo</span>
+        <span class="value"><span id="time">30</span>s</span>
+      </div>
+    </section>
+
+    <section class="stage" id="stage">
+      <canvas id="game" aria-label="Juego de atrapar lingotes"></canvas>
+
+      <div class="overlay menu-overlay" id="startOverlay">
+        <div class="menu-card">
+          <img class="game-title-image" src="assets/titulojuego.png" alt="Super Papa Atrapa el Oro">
+          <h1 class="menu-title">Atrapa Lingotes</h1>
+          <p class="instructions">Desliza al superheroe en celular o usa las flechas izquierda y derecha en PC. Atrapa lingotes, evita las piedras y llega a la meta para desbloquear el dado de premios.</p>
+          <div class="rules menu-rules" aria-label="Puntos e instrucciones">
+            <div class="rule"><strong>10</strong>1 GR</div>
+            <div class="rule"><strong>35</strong>5 GR</div>
+            <div class="rule"><strong>80</strong>10 GR</div>
+            <div class="rule"><strong>-70</strong>Piedra</div>
+          </div>
+          <button class="primary start-button" id="startBtn">A JUGAR</button>
+          <img class="brand-logo" src="assets/Logo inticash.png" alt="Inticash">
+        </div>
+      </div>
+
+      <div class="overlay loader-overlay" id="loaderOverlay" hidden>
+        <div class="loader-content">
+          <img class="loader-mark" src="assets/isotipo inticash.png" alt="">
+          <div class="loader-text">Preparando juego</div>
+        </div>
+      </div>
+
+      <div class="overlay countdown-overlay" id="countdownOverlay" hidden>
+        <div class="countdown-content">
+          <div class="countdown-title">Prepárate</div>
+          <div class="countdown-number" id="countdownNumber">5</div>
+        </div>
+      </div>
+
+      <div class="overlay" id="endOverlay" hidden>
+        <div class="panel" id="endPanel"></div>
+      </div>
+
+      <button class="sound-toggle" id="soundBtn" aria-label="Activar o silenciar sonido" title="Sonido">ON</button>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const GAME_SECONDS = 30;
+      const TARGET_SCORE = 1150;
+      const COUNTDOWN_SECONDS = 5;
+      const ROCK_PENALTY = 70;
+      const PRIZES = ["premio 1", "premio 2", "premio 3", "premio 4", "premio 5", "premio 6"];
+
+      const app = document.getElementById("app");
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const stage = document.getElementById("stage");
+      const scoreEl = document.getElementById("score");
+      const timeEl = document.getElementById("time");
+      const meterFill = document.getElementById("meterFill");
+      const targetCopy = document.getElementById("targetCopy");
+      const startOverlay = document.getElementById("startOverlay");
+      const loaderOverlay = document.getElementById("loaderOverlay");
+      const countdownOverlay = document.getElementById("countdownOverlay");
+      const countdownNumber = document.getElementById("countdownNumber");
+      const endOverlay = document.getElementById("endOverlay");
+      const endPanel = document.getElementById("endPanel");
+      const startBtn = document.getElementById("startBtn");
+      const soundBtn = document.getElementById("soundBtn");
+
+      targetCopy.textContent = TARGET_SCORE;
+
+      const assetSources = {
+        hero: "assets/superheroe.png",
+        g1: "assets/Lingote1g.png",
+        g5: "assets/lingote5g.png",
+        g10: "assets/lingote10g.png",
+        rock: "assets/piedra.png",
+        logo: "assets/Logo inticash.png",
+        mark: "assets/isotipo inticash.png"
+      };
+
+      const goldTypes = [
+        { key: "g1", label: "1 GR", points: 10, weight: 58, speed: 1.03 },
+        { key: "g5", label: "5 GR", points: 35, weight: 30, speed: 1.16 },
+        { key: "g10", label: "10 GR", points: 80, weight: 12, speed: 1.28 }
+      ];
+
+      const images = {};
+      const keys = Object.keys(assetSources);
+      let loaded = 0;
+      keys.forEach((key) => {
+        images[key] = new Image();
+        images[key].src = assetSources[key];
+        images[key].onload = () => {
+          loaded += 1;
+          if (loaded === keys.length) drawIdle();
+        };
+      });
+
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let score = 0;
+      let timeLeft = GAME_SECONDS;
+      let countdownLeft = COUNTDOWN_SECONDS;
+      let status = "idle";
+      let lastTime = 0;
+      let spawnTimer = 0;
+      let rockTimer = 1.2;
+      let shakeTime = 0;
+      let animationId = 0;
+      let countdownTimeout = 0;
+      let audioCtx = null;
+      let soundEnabled = true;
+      let pointerActive = false;
+      const keysDown = new Set();
+      const lingots = [];
+      const rocks = [];
+      const sparkles = [];
+      const hero = { x: 0, y: 0, w: 120, h: 184, speed: 660, targetX: null };
+
+      function resize() {
+        const rect = stage.getBoundingClientRect();
+        width = Math.max(320, Math.floor(rect.width));
+        height = Math.max(420, Math.floor(rect.height));
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const heroHeight = clamp(height * 0.24, 128, 210);
+        hero.h = heroHeight;
+        hero.w = heroHeight * 0.65;
+        const bottomLift = width >= 720 ? clamp(height * 0.085, 48, 82) : clamp(height * 0.045, 22, 44);
+        hero.y = height - hero.h - bottomLift;
+        hero.x = clamp(hero.x || width / 2, hero.w / 2, width - hero.w / 2);
+
+        if (status !== "playing") drawIdle();
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function weightedGoldType() {
+        const total = goldTypes.reduce((sum, item) => sum + item.weight, 0);
+        let pick = Math.random() * total;
+        for (const item of goldTypes) {
+          pick -= item.weight;
+          if (pick <= 0) return item;
+        }
+        return goldTypes[0];
+      }
+
+      function spawnLingot(forceType) {
+        const type = forceType || weightedGoldType();
+        const base = clamp(width * (type.key === "g10" ? 0.115 : 0.095), 42, type.key === "g10" ? 82 : 70);
+        const natural = images[type.key].height / images[type.key].width;
+        const item = {
+          type,
+          x: Math.random() * (width - base) + base / 2,
+          y: -base * natural - 24,
+          w: base,
+          h: base * natural,
+          vy: (height * 0.34 + Math.random() * height * 0.15) * type.speed,
+          rot: (Math.random() - .5) * .34,
+          spin: (Math.random() - .5) * 1.25,
+          caught: false
+        };
+        lingots.push(item);
+      }
+
+      function spawnRock() {
+        const base = clamp(width * 0.09, 42, 76);
+        rocks.push({
+          x: Math.random() * (width - base) + base / 2,
+          y: -base - 18,
+          w: base,
+          h: base,
+          vy: height * (0.39 + Math.random() * 0.18),
+          rot: (Math.random() - .5) * .4,
+          spin: (Math.random() - .5) * 2.1
+        });
+      }
+
+      function initAudio() {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) audioCtx = new AudioContext();
+        }
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+      }
+
+      function tone(freq, duration, type = "sine", gain = .055, delay = 0) {
+        if (!soundEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime + delay;
+        const oscillator = audioCtx.createOscillator();
+        const volume = audioCtx.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(freq, now);
+        volume.gain.setValueAtTime(0.0001, now);
+        volume.gain.exponentialRampToValueAtTime(gain, now + .02);
+        volume.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        oscillator.connect(volume).connect(audioCtx.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + .03);
+      }
+
+      function collectSound(points) {
+        tone(points >= 80 ? 880 : points >= 35 ? 660 : 520, .11, "triangle", .06);
+        tone(points >= 80 ? 1320 : points >= 35 ? 980 : 760, .14, "sine", .045, .05);
+      }
+
+      function startSound() {
+        tone(392, .12, "triangle", .05);
+        tone(587, .12, "triangle", .05, .08);
+        tone(784, .18, "triangle", .055, .16);
+      }
+
+      function winSound() {
+        [523, 659, 784, 1046].forEach((f, i) => tone(f, .16, "triangle", .055, i * .09));
+      }
+
+      function loseSound() {
+        [392, 330, 262].forEach((f, i) => tone(f, .18, "sawtooth", .032, i * .12));
+      }
+
+      function rockSound() {
+        tone(130, .13, "sawtooth", .05);
+        tone(95, .18, "square", .035, .05);
+      }
+
+      function diceSound() {
+        for (let i = 0; i < 12; i += 1) {
+          tone(180 + Math.random() * 720, .06, "square", .026, i * .07);
+        }
+        tone(880, .22, "triangle", .055, .95);
+      }
+
+      function updateHud() {
+        scoreEl.textContent = score;
+        timeEl.textContent = Math.ceil(timeLeft);
+        meterFill.style.width = `${Math.min(100, score / TARGET_SCORE * 100)}%`;
+      }
+
+      function startGame() {
+        initAudio();
+        startSound();
+        cancelAnimationFrame(animationId);
+        window.clearTimeout(countdownTimeout);
+        score = 0;
+        timeLeft = GAME_SECONDS;
+        countdownLeft = COUNTDOWN_SECONDS;
+        lingots.length = 0;
+        rocks.length = 0;
+        sparkles.length = 0;
+        spawnTimer = 0;
+        rockTimer = 1.2;
+        shakeTime = 0;
+        hero.x = width / 2;
+        hero.targetX = null;
+        app.classList.remove("menu-mode");
+        startOverlay.hidden = true;
+        endOverlay.hidden = true;
+        countdownOverlay.hidden = true;
+        loaderOverlay.hidden = false;
+        status = "loading";
+        updateHud();
+        drawIdle();
+        window.setTimeout(startCountdown, 2000);
+      }
+
+      function startCountdown() {
+        if (status !== "loading") return;
+        loaderOverlay.hidden = true;
+        countdownOverlay.hidden = false;
+        countdownLeft = COUNTDOWN_SECONDS;
+        countdownNumber.textContent = String(COUNTDOWN_SECONDS);
+        lastTime = performance.now();
+        status = "countdown";
+        cancelAnimationFrame(animationId);
+        animationId = requestAnimationFrame(loop);
+        countdownTimeout = window.setTimeout(() => {
+          if (status === "countdown") beginPlay();
+        }, COUNTDOWN_SECONDS * 1000);
+      }
+
+      function goHome() {
+        cancelAnimationFrame(animationId);
+        window.clearTimeout(countdownTimeout);
+        status = "idle";
+        score = 0;
+        timeLeft = GAME_SECONDS;
+        countdownLeft = COUNTDOWN_SECONDS;
+        lingots.length = 0;
+        rocks.length = 0;
+        sparkles.length = 0;
+        keysDown.clear();
+        hero.x = width / 2;
+        hero.targetX = null;
+        app.classList.add("menu-mode");
+        startOverlay.hidden = false;
+        loaderOverlay.hidden = true;
+        countdownOverlay.hidden = true;
+        endOverlay.hidden = true;
+        endOverlay.className = "overlay";
+        endPanel.className = "panel";
+        updateHud();
+        resize();
+        drawIdle();
+      }
+
+      function beginPlay() {
+        window.clearTimeout(countdownTimeout);
+        cancelAnimationFrame(animationId);
+        score = 0;
+        timeLeft = GAME_SECONDS;
+        lingots.length = 0;
+        rocks.length = 0;
+        sparkles.length = 0;
+        spawnTimer = 0;
+        rockTimer = .8;
+        lastTime = performance.now();
+        status = "playing";
+        hero.x = width / 2;
+        hero.targetX = null;
+        startOverlay.hidden = true;
+        loaderOverlay.hidden = true;
+        countdownOverlay.hidden = true;
+        endOverlay.hidden = true;
+        updateHud();
+        animationId = requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        status = "ended";
+        cancelAnimationFrame(animationId);
+        const won = score >= TARGET_SCORE;
+        if (won) {
+          endOverlay.className = "overlay dice-overlay";
+          endPanel.className = "";
+          winSound();
+          renderDicePanel();
+        } else {
+          endOverlay.className = "overlay";
+          endPanel.className = "panel";
+          loseSound();
+          renderLosePanel();
+        }
+        endOverlay.hidden = false;
+      }
+
+      function renderLosePanel() {
+        endPanel.innerHTML = `
+          <h2>Tiempo terminado</h2>
+          <p class="lead">Lograste ${score} puntos. La meta para obtener el dado era ${TARGET_SCORE} puntos.</p>
+          <button class="primary" id="homeBtn">Volver al inicio</button>
+        `;
+        document.getElementById("homeBtn").addEventListener("click", goHome);
+      }
+
+      function renderDicePanel() {
+        endPanel.innerHTML = `
+          <div class="dice-zone">
+            <h2 class="dice-title">Lanza el dado para descubrir tu premio</h2>
+            <button class="dice ready" id="dice" data-face="1" aria-label="Lanzar dado">
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span>
+              <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+            </button>
+            <div class="prize" id="prizeResult"></div>
+            <button class="primary start-button" id="homeBtn">Volver al inicio</button>
+          </div>
+        `;
+        const dice = document.getElementById("dice");
+        const prizeResult = document.getElementById("prizeResult");
+        let rolled = false;
+        dice.addEventListener("click", () => {
+          if (rolled) return;
+          rolled = true;
+          initAudio();
+          diceSound();
+          prizeResult.textContent = "";
+          dice.classList.remove("ready");
+          dice.classList.add("rolling");
+          let flashes = 0;
+          const flash = window.setInterval(() => {
+            dice.dataset.face = String(1 + Math.floor(Math.random() * 6));
+            flashes += 1;
+            if (flashes > 12) window.clearInterval(flash);
+          }, 90);
+          window.setTimeout(() => {
+            const face = 1 + Math.floor(Math.random() * 6);
+            dice.dataset.face = String(face);
+            dice.classList.remove("rolling");
+            prizeResult.textContent = PRIZES[face - 1];
+          }, 1350);
+        });
+        document.getElementById("homeBtn").addEventListener("click", goHome);
+      }
+
+      function loop(now) {
+        if (status !== "playing" && status !== "countdown") return;
+        const dt = Math.min(.033, (now - lastTime) / 1000 || 0);
+        lastTime = now;
+
+        if (status === "countdown") {
+          countdownLeft -= dt;
+          countdownNumber.textContent = String(Math.max(1, Math.ceil(countdownLeft)));
+          updateHero(dt);
+          draw();
+          if (countdownLeft <= 0) {
+            beginPlay();
+            return;
+          }
+          animationId = requestAnimationFrame(loop);
+          return;
+        }
+
+        timeLeft -= dt;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          updateHud();
+          draw();
+          endGame();
+          return;
+        }
+
+        updateHero(dt);
+        updateLingots(dt);
+        updateSparkles(dt);
+        updateHud();
+        draw();
+        animationId = requestAnimationFrame(loop);
+      }
+
+      function updateHero(dt) {
+        const move = (keysDown.has("ArrowRight") ? 1 : 0) - (keysDown.has("ArrowLeft") ? 1 : 0);
+        if (move !== 0) {
+          hero.targetX = null;
+          hero.x += move * hero.speed * dt;
+        } else if (hero.targetX !== null) {
+          hero.x += (hero.targetX - hero.x) * Math.min(1, dt * 12);
+        }
+        hero.x = clamp(hero.x, hero.w / 2, width - hero.w / 2);
+      }
+
+      function updateLingots(dt) {
+        spawnTimer -= dt;
+        rockTimer -= dt;
+        const urgency = 1 + (GAME_SECONDS - timeLeft) / GAME_SECONDS * .45;
+        if (spawnTimer <= 0) {
+          spawnLingot();
+          if (Math.random() < .18) spawnLingot();
+          spawnTimer = Math.max(.24, (.58 - Math.random() * .2) / urgency);
+        }
+        if (rockTimer <= 0) {
+          spawnRock();
+          rockTimer = Math.max(.72, (1.55 - Math.random() * .42) / urgency);
+        }
+        if (shakeTime > 0) shakeTime -= dt;
+
+        const heroBox = {
+          left: hero.x - hero.w * .36,
+          right: hero.x + hero.w * .36,
+          top: hero.y + hero.h * .05,
+          bottom: hero.y + hero.h * .96
+        };
+
+        for (let i = lingots.length - 1; i >= 0; i -= 1) {
+          const item = lingots[i];
+          item.y += item.vy * dt;
+          item.rot += item.spin * dt;
+
+          const itemBox = {
+            left: item.x - item.w * .34,
+            right: item.x + item.w * .34,
+            top: item.y + item.h * .1,
+            bottom: item.y + item.h * .88
+          };
+
+          const hit = itemBox.left < heroBox.right && itemBox.right > heroBox.left && itemBox.top < heroBox.bottom && itemBox.bottom > heroBox.top;
+          if (hit) {
+            score += item.type.points;
+            collectSound(item.type.points);
+            addSparkle(item.x, item.y + item.h * .35, item.type.points);
+            showPoints(item.x, item.y + item.h * .25, item.type.points);
+            lingots.splice(i, 1);
+          } else if (item.y > height + item.h) {
+            lingots.splice(i, 1);
+          }
+        }
+
+        for (let i = rocks.length - 1; i >= 0; i -= 1) {
+          const item = rocks[i];
+          item.y += item.vy * dt;
+          item.rot += item.spin * dt;
+
+          const itemBox = {
+            left: item.x - item.w * .38,
+            right: item.x + item.w * .38,
+            top: item.y + item.h * .14,
+            bottom: item.y + item.h * .84
+          };
+
+          const hit = itemBox.left < heroBox.right && itemBox.right > heroBox.left && itemBox.top < heroBox.bottom && itemBox.bottom > heroBox.top;
+          if (hit) {
+            score = Math.max(0, score - ROCK_PENALTY);
+            shakeTime = .28;
+            rockSound();
+            addSparkle(item.x, item.y + item.h * .35, 10);
+            showPoints(item.x, item.y + item.h * .25, -ROCK_PENALTY);
+            rocks.splice(i, 1);
+          } else if (item.y > height + item.h) {
+            rocks.splice(i, 1);
+          }
+        }
+      }
+
+      function updateSparkles(dt) {
+        for (let i = sparkles.length - 1; i >= 0; i -= 1) {
+          const s = sparkles[i];
+          s.life -= dt;
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          s.vy += 240 * dt;
+          if (s.life <= 0) sparkles.splice(i, 1);
+        }
+      }
+
+      function addSparkle(x, y, points) {
+        const count = points >= 80 ? 18 : points >= 35 ? 12 : 8;
+        for (let i = 0; i < count; i += 1) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 80 + Math.random() * 180;
+          sparkles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 80,
+            life: .35 + Math.random() * .25,
+            size: 2 + Math.random() * 4
+          });
+        }
+      }
+
+      function showPoints(x, y, points) {
+        const rect = canvas.getBoundingClientRect();
+        const el = document.createElement("div");
+        el.className = "points-pop";
+        el.textContent = points > 0 ? `+${points}` : String(points);
+        if (points < 0) el.style.color = "#d91f18";
+        el.style.left = `${rect.left + x}px`;
+        el.style.top = `${rect.top + y}px`;
+        el.style.fontSize = `${points >= 80 ? 28 : points >= 35 ? 22 : 18}px`;
+        document.body.appendChild(el);
+        window.setTimeout(() => el.remove(), 760);
+      }
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, width, height);
+        const sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, "#eef7ff");
+        sky.addColorStop(.52, "#fff7cc");
+        sky.addColorStop(1, "#123150");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.save();
+        ctx.globalAlpha = .16;
+        ctx.fillStyle = "#EDC500";
+        for (let i = 0; i < 18; i += 1) {
+          const x = (i * 97 + performance.now() * .015) % (width + 120) - 60;
+          const y = 42 + (i % 6) * (height / 7);
+          ctx.beginPath();
+          ctx.arc(x, y, 18 + (i % 4) * 7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = .12;
+        ctx.strokeStyle = "#123150";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 48) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x - width * .15, height);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawLingot(item) {
+        const img = images[item.type.key];
+        ctx.save();
+        ctx.translate(item.x, item.y + item.h / 2);
+        ctx.rotate(item.rot);
+        if (item.type.key === "g10") {
+          const pulse = .75 + Math.sin(performance.now() / 120) * .25;
+          ctx.save();
+          ctx.globalAlpha = .55 * pulse;
+          ctx.fillStyle = "#fff3a1";
+          ctx.beginPath();
+          ctx.ellipse(0, 0, item.w * .72, item.h * .48, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          ctx.shadowColor = "rgba(237, 197, 0, .9)";
+          ctx.shadowBlur = 32;
+        } else {
+          ctx.shadowColor = "rgba(76, 48, 0, .28)";
+          ctx.shadowBlur = 16;
+        }
+        ctx.shadowOffsetY = 9;
+        ctx.drawImage(img, -item.w / 2, -item.h / 2, item.w, item.h);
+        ctx.restore();
+      }
+
+      function drawRock(item) {
+        if (!images.rock.complete) return;
+        ctx.save();
+        ctx.translate(item.x, item.y + item.h / 2);
+        ctx.rotate(item.rot);
+        ctx.shadowColor = "rgba(0, 0, 0, .28)";
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetY = 8;
+        ctx.drawImage(images.rock, -item.w / 2, -item.h / 2, item.w, item.h);
+        ctx.restore();
+      }
+
+      function drawHero() {
+        if (!images.hero.complete) return;
+        ctx.save();
+        ctx.shadowColor = "rgba(35, 20, 0, .24)";
+        ctx.shadowBlur = 22;
+        ctx.shadowOffsetY = 12;
+        ctx.drawImage(images.hero, hero.x - hero.w / 2, hero.y, hero.w, hero.h);
+        ctx.restore();
+      }
+
+      function drawSparkles() {
+        ctx.save();
+        for (const s of sparkles) {
+          ctx.globalAlpha = clamp(s.life / .45, 0, 1);
+          ctx.fillStyle = Math.random() > .5 ? "#fff5a6" : "#edc500";
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function draw() {
+        if (shakeTime > 0) {
+          ctx.save();
+          ctx.translate((Math.random() - .5) * 10, (Math.random() - .5) * 8);
+        }
+        drawBackground();
+        for (const item of lingots) drawLingot(item);
+        for (const item of rocks) drawRock(item);
+        drawSparkles();
+        drawHero();
+        if (shakeTime > 0) ctx.restore();
+      }
+
+      function drawIdle() {
+        drawBackground();
+        if (images.g1 && images.g1.complete) {
+          const preview = [
+            { type: goldTypes[0], x: width * .23, y: height * .18, w: clamp(width * .13, 54, 88), rot: -.15 },
+            { type: goldTypes[1], x: width * .5, y: height * .1, w: clamp(width * .14, 60, 96), rot: .08 },
+            { type: goldTypes[2], x: width * .76, y: height * .18, w: clamp(width * .15, 64, 108), rot: .14 }
+          ];
+          for (const p of preview) {
+            const img = images[p.type.key];
+            drawLingot({ ...p, h: p.w * img.height / img.width });
+          }
+        }
+        drawHero();
+      }
+
+      function setHeroFromClientX(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        hero.targetX = clamp(clientX - rect.left, hero.w / 2, width - hero.w / 2);
+      }
+
+      window.addEventListener("resize", resize);
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          keysDown.add(event.key);
+        }
+        if ((event.key === " " || event.key === "Enter") && status === "idle") startGame();
+      });
+      window.addEventListener("keyup", (event) => keysDown.delete(event.key));
+
+      canvas.addEventListener("pointerdown", (event) => {
+        pointerActive = true;
+        canvas.setPointerCapture(event.pointerId);
+        setHeroFromClientX(event.clientX);
+      });
+      canvas.addEventListener("pointermove", (event) => {
+        if (pointerActive) setHeroFromClientX(event.clientX);
+      });
+      canvas.addEventListener("pointerup", () => { pointerActive = false; });
+      canvas.addEventListener("pointercancel", () => { pointerActive = false; });
+
+      startBtn.addEventListener("click", startGame);
+      soundBtn.addEventListener("click", () => {
+        initAudio();
+        soundEnabled = !soundEnabled;
+        soundBtn.textContent = soundEnabled ? "ON" : "OFF";
+      });
+
+      resize();
+      updateHud();
+    })();
+  </script>
+</body>
+</html>
