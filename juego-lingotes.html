@@ -387,6 +387,90 @@
       text-transform: uppercase;
     }
 
+    .register-overlay {
+      background: rgba(6, 20, 36, .72);
+      backdrop-filter: blur(16px);
+    }
+
+    .register-panel {
+      width: min(560px, 100%);
+      max-height: calc(100vh - 34px);
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 8px;
+      background: linear-gradient(145deg, rgba(18, 49, 80, .96), rgba(6, 20, 36, .98));
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .register-panel h2 {
+      color: var(--gold);
+      font-size: clamp(26px, 6vw, 38px);
+      text-align: center;
+    }
+
+    .register-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .field label {
+      color: rgba(255, 255, 255, .82);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, .94);
+      color: var(--brand-blue);
+      font: 700 15px Raleway, sans-serif;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(237, 197, 0, .18);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-error {
+      min-height: 18px;
+      color: #ffd35c;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .close-register {
+      width: 100%;
+      margin-top: 8px;
+      background: rgba(255, 255, 255, .12);
+      color: #fff;
+      box-shadow: none;
+    }
+
     .countdown-number {
       display: grid;
       place-items: center;
@@ -495,6 +579,81 @@
       text-transform: uppercase;
     }
 
+    .claim-card {
+      display: none;
+      width: min(560px, 92vw);
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .08);
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .claim-card.show {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      animation: claimIn .28s ease-out both;
+    }
+
+    .claim-icon {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--brand-blue);
+    }
+
+    .claim-icon::before {
+      content: "";
+      width: 30px;
+      height: 22px;
+      border-radius: 5px;
+      background: var(--brand-blue);
+      box-shadow: 0 -6px 0 -2px var(--brand-blue);
+    }
+
+    .claim-icon::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border: 3px solid var(--gold);
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .claim-text {
+      max-width: 42ch;
+      color: rgba(255, 255, 255, .88);
+      font-size: clamp(14px, 3.4vw, 17px);
+      font-weight: 400;
+      line-height: 1.45;
+    }
+
+    .whatsapp-button {
+      display: none;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: #25d366;
+      color: #06351a;
+      font-weight: 950;
+      text-decoration: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 28px rgba(37, 211, 102, .25);
+    }
+
+    .whatsapp-button.show {
+      display: inline-flex;
+    }
+
     .dice-overlay .prize {
       color: var(--gold);
       font-size: clamp(34px, 10vw, 82px);
@@ -562,6 +721,11 @@
       50% { transform: scale(1.04); opacity: 1; }
     }
 
+    @keyframes claimIn {
+      from { opacity: 0; transform: translateY(14px) scale(.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     @media (max-width: 560px) {
       .app { gap: 8px; padding: 10px; }
       .hud {
@@ -579,6 +743,8 @@
       .menu-card { gap: 10px; padding-bottom: 64px; }
       .game-title-image { max-height: 34vh; }
       .brand-logo { width: min(150px, 42vw); max-height: 50px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .register-panel { padding: 18px 14px; }
       .sound-toggle { right: 10px; bottom: 10px; }
     }
   </style>
@@ -615,13 +781,55 @@
           <h1 class="menu-title">Atrapa Lingotes</h1>
           <p class="instructions">Desliza al superheroe en celular o usa las flechas izquierda y derecha en PC. Atrapa lingotes, evita las piedras y llega a la meta para desbloquear el dado de premios.</p>
           <div class="rules menu-rules" aria-label="Puntos e instrucciones">
-            <div class="rule"><strong>10</strong>1 GR</div>
-            <div class="rule"><strong>35</strong>5 GR</div>
-            <div class="rule"><strong>80</strong>10 GR</div>
-            <div class="rule"><strong>-70</strong>Piedra</div>
+            <div class="rule"><strong>10 puntos</strong>1 GR</div>
+            <div class="rule"><strong>35 puntos</strong>5 GR</div>
+            <div class="rule"><strong>80 puntos</strong>10 GR</div>
+            <div class="rule"><strong>-70 puntos</strong>Piedra</div>
           </div>
           <button class="primary start-button" id="startBtn">A JUGAR</button>
           <img class="brand-logo" src="assets/Logo inticash.png" alt="Inticash">
+        </div>
+      </div>
+
+      <div class="overlay register-overlay" id="registerOverlay" hidden>
+        <div class="register-panel">
+          <h2>Registro</h2>
+          <form class="register-form" id="registerForm" autocomplete="on">
+            <div class="field">
+              <label for="fullName">Nombres y apellidos</label>
+              <input id="fullName" name="fullName" type="text" required minlength="4" autocomplete="name">
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="docType">Tipo de documento</label>
+                <select id="docType" name="docType" required>
+                  <option value="">Seleccionar</option>
+                  <option value="DNI">DNI</option>
+                  <option value="CE">Carnet de extranjeria</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="docNumber">Numero de documento</label>
+                <input id="docNumber" name="docNumber" type="text" required inputmode="numeric" autocomplete="off">
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="phone">Celular</label>
+                <input id="phone" name="phone" type="tel" required inputmode="tel" autocomplete="tel">
+              </div>
+              <div class="field">
+                <label for="branch">Sucursal donde se atendio</label>
+                <select id="branch" name="branch" required>
+                  <option value="">Seleccionar</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-error" id="formError" aria-live="polite"></div>
+            <button class="primary start-button" type="submit">A JUGAR</button>
+            <button class="primary close-register" id="cancelRegisterBtn" type="button">Volver al inicio</button>
+          </form>
         </div>
       </div>
 
@@ -634,7 +842,7 @@
 
       <div class="overlay countdown-overlay" id="countdownOverlay" hidden>
         <div class="countdown-content">
-          <div class="countdown-title">Prepárate</div>
+          <div class="countdown-title">Preparate</div>
           <div class="countdown-number" id="countdownNumber">5</div>
         </div>
       </div>
@@ -654,6 +862,17 @@
       const COUNTDOWN_SECONDS = 5;
       const ROCK_PENALTY = 70;
       const PRIZES = ["premio 1", "premio 2", "premio 3", "premio 4", "premio 5", "premio 6"];
+      const BRANCHES = [
+        { name: "01 - Tacna, centro", phone: "963165116" },
+        { name: "02 - Ilo, centro", phone: "991656113" },
+        { name: "03 - Tacna, cono sur", phone: "997085856" },
+        { name: "06 - Arequipa, centro", phone: "943505474" },
+        { name: "07 - Juliaca, centro", phone: "940223410" },
+        { name: "08 - Lima, Zarate SJL", phone: "991987148" },
+        { name: "09 - Lima, San Luis, SB", phone: "963097491" },
+        { name: "10 - Arequipa, Cayma", phone: "987375096" },
+        { name: "11 - Lima, San Juan de Miraflores", phone: "941542536" }
+      ];
 
       const app = document.getElementById("app");
       const canvas = document.getElementById("game");
@@ -664,6 +883,11 @@
       const meterFill = document.getElementById("meterFill");
       const targetCopy = document.getElementById("targetCopy");
       const startOverlay = document.getElementById("startOverlay");
+      const registerOverlay = document.getElementById("registerOverlay");
+      const registerForm = document.getElementById("registerForm");
+      const formError = document.getElementById("formError");
+      const cancelRegisterBtn = document.getElementById("cancelRegisterBtn");
+      const branchSelect = document.getElementById("branch");
       const loaderOverlay = document.getElementById("loaderOverlay");
       const countdownOverlay = document.getElementById("countdownOverlay");
       const countdownNumber = document.getElementById("countdownNumber");
@@ -718,6 +942,8 @@
       let audioCtx = null;
       let soundEnabled = true;
       let pointerActive = false;
+      let currentPlayer = null;
+      let currentPrize = "";
       const keysDown = new Set();
       const lingots = [];
       const rocks = [];
@@ -850,11 +1076,91 @@
         meterFill.style.width = `${Math.min(100, score / TARGET_SCORE * 100)}%`;
       }
 
+      function populateBranches() {
+        branchSelect.innerHTML = '<option value="">Seleccionar</option>';
+        for (const branch of BRANCHES) {
+          const option = document.createElement("option");
+          option.value = branch.name;
+          option.textContent = branch.name;
+          option.dataset.phone = branch.phone;
+          branchSelect.appendChild(option);
+        }
+      }
+
+      function openRegister() {
+        formError.textContent = "";
+        registerOverlay.hidden = false;
+      }
+
+      function closeRegister() {
+        registerOverlay.hidden = true;
+        formError.textContent = "";
+      }
+
+      function normalizePhone(value) {
+        return value.replace(/\D/g, "");
+      }
+
+      function handleRegisterSubmit(event) {
+        event.preventDefault();
+        const selected = branchSelect.selectedOptions[0];
+        const fullName = document.getElementById("fullName").value.trim();
+        const docType = document.getElementById("docType").value;
+        const docNumber = document.getElementById("docNumber").value.trim();
+        const phone = normalizePhone(document.getElementById("phone").value);
+        const branch = branchSelect.value;
+        const branchPhone = selected ? selected.dataset.phone : "";
+
+        if (!fullName || !docType || !docNumber || !phone || !branch || !branchPhone) {
+          formError.textContent = "Completa todos los datos para continuar.";
+          return;
+        }
+        if (docType === "DNI" && !/^\d{8}$/.test(docNumber)) {
+          formError.textContent = "El DNI debe tener 8 digitos.";
+          return;
+        }
+        if (phone.length < 9) {
+          formError.textContent = "Ingresa un celular valido.";
+          return;
+        }
+
+        currentPlayer = {
+          fullName,
+          docType,
+          docNumber,
+          phone,
+          branch,
+          branchPhone,
+          registeredAt: new Date().toISOString()
+        };
+        closeRegister();
+        startGame();
+      }
+
+      function isMobileDevice() {
+        return window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) <= 760;
+      }
+
+      function buildWhatsAppUrl(prize) {
+        const playerName = currentPlayer ? currentPlayer.fullName : "";
+        const branch = currentPlayer ? currentPlayer.branch : "";
+        const phone = currentPlayer ? currentPlayer.branchPhone : "";
+        const message = [
+          "Hola! Te envio mi captura de pantalla del juego Super Papa atrapa el oro.",
+          playerName ? `Soy ${playerName}.` : "",
+          branch ? `Me atendi en ${branch}.` : "",
+          prize ? `Mi premio es: ${prize}.` : "",
+          `Puntaje: ${score} puntos.`
+        ].filter(Boolean).join(" ");
+        return `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+      }
+
       function startGame() {
         initAudio();
         startSound();
         cancelAnimationFrame(animationId);
         window.clearTimeout(countdownTimeout);
+        currentPrize = "";
         score = 0;
         timeLeft = GAME_SECONDS;
         countdownLeft = COUNTDOWN_SECONDS;
@@ -868,6 +1174,7 @@
         hero.targetX = null;
         app.classList.remove("menu-mode");
         startOverlay.hidden = true;
+        registerOverlay.hidden = true;
         endOverlay.hidden = true;
         countdownOverlay.hidden = true;
         loaderOverlay.hidden = false;
@@ -907,6 +1214,7 @@
         hero.targetX = null;
         app.classList.add("menu-mode");
         startOverlay.hidden = false;
+        registerOverlay.hidden = true;
         loaderOverlay.hidden = true;
         countdownOverlay.hidden = true;
         endOverlay.hidden = true;
@@ -975,11 +1283,19 @@
               <span class="pip"></span><span class="pip"></span><span class="pip"></span>
             </button>
             <div class="prize" id="prizeResult"></div>
-            <button class="primary start-button" id="homeBtn">Volver al inicio</button>
+            <div class="claim-card" id="claimCard">
+              <div class="claim-icon" aria-hidden="true"></div>
+              <p class="claim-text" id="claimText"></p>
+              <a class="whatsapp-button" id="whatsappBtn" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+              <button class="primary" id="homeBtn" type="button">Volver al inicio</button>
+            </div>
           </div>
         `;
         const dice = document.getElementById("dice");
         const prizeResult = document.getElementById("prizeResult");
+        const claimCard = document.getElementById("claimCard");
+        const claimText = document.getElementById("claimText");
+        const whatsappBtn = document.getElementById("whatsappBtn");
         let rolled = false;
         dice.addEventListener("click", () => {
           if (rolled) return;
@@ -997,9 +1313,16 @@
           }, 90);
           window.setTimeout(() => {
             const face = 1 + Math.floor(Math.random() * 6);
+            currentPrize = PRIZES[face - 1];
             dice.dataset.face = String(face);
             dice.classList.remove("rolling");
-            prizeResult.textContent = PRIZES[face - 1];
+            prizeResult.textContent = currentPrize;
+            claimText.textContent = `Toma una captura de pantalla de este resultado y enviala al WhatsApp de la sucursal donde te atendiste: ${currentPlayer ? currentPlayer.branch : "tu sucursal"}.`;
+            if (isMobileDevice() && currentPlayer && currentPlayer.branchPhone) {
+              whatsappBtn.href = buildWhatsAppUrl(currentPrize);
+              whatsappBtn.classList.add("show");
+            }
+            claimCard.classList.add("show");
           }, 1350);
         });
         document.getElementById("homeBtn").addEventListener("click", goHome);
@@ -1295,7 +1618,7 @@
           event.preventDefault();
           keysDown.add(event.key);
         }
-        if ((event.key === " " || event.key === "Enter") && status === "idle") startGame();
+        if ((event.key === " " || event.key === "Enter") && status === "idle" && startOverlay.hidden === false) openRegister();
       });
       window.addEventListener("keyup", (event) => keysDown.delete(event.key));
 
@@ -1310,13 +1633,16 @@
       canvas.addEventListener("pointerup", () => { pointerActive = false; });
       canvas.addEventListener("pointercancel", () => { pointerActive = false; });
 
-      startBtn.addEventListener("click", startGame);
+      startBtn.addEventListener("click", openRegister);
+      registerForm.addEventListener("submit", handleRegisterSubmit);
+      cancelRegisterBtn.addEventListener("click", closeRegister);
       soundBtn.addEventListener("click", () => {
         initAudio();
         soundEnabled = !soundEnabled;
         soundBtn.textContent = soundEnabled ? "ON" : "OFF";
       });
 
+      populateBranches();
       resize();
       updateHud();
     })();
