@@ -759,7 +759,7 @@
       <div class="goal-wrap">
         <div class="goal-copy">
           <span>Meta para desbloquear dado</span>
-          <span><strong id="targetCopy">1150</strong> pts</span>
+          <span><strong id="targetCopy">800</strong> pts</span>
         </div>
         <div class="meter" aria-label="Progreso hacia la meta">
           <div class="meter-fill" id="meterFill"></div>
@@ -858,7 +858,7 @@
   <script>
     (() => {
       const GAME_SECONDS = 30;
-      const TARGET_SCORE = 1150;
+      const TARGET_SCORE = 800;
       const COUNTDOWN_SECONDS = 5;
       const ROCK_PENALTY = 70;
       const SHEETS_ENDPOINT = "https://script.google.com/macros/s/AKfycbz249AuAnQyRMymMWk4vUcX3eexFZ_JEdeMkUUxtek_BdA_tl_c0_zFPk38BUHcnItlEw/exec";
@@ -962,10 +962,10 @@
         canvas.style.height = `${height}px`;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const heroHeight = clamp(height * 0.24, 128, 210);
+        const heroHeight = width >= 720 ? clamp(height * 0.21, 128, 178) : clamp(height * 0.19, 108, 142);
         hero.h = heroHeight;
         hero.w = heroHeight * 0.65;
-        const bottomLift = width >= 720 ? clamp(height * 0.085, 48, 82) : clamp(height * 0.045, 22, 44);
+        const bottomLift = width >= 720 ? clamp(height * 0.13, 74, 118) : clamp(height * 0.12, 68, 96);
         hero.y = height - hero.h - bottomLift;
         hero.x = clamp(hero.x || width / 2, hero.w / 2, width - hero.w / 2);
 
