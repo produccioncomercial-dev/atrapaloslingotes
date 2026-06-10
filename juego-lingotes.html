@@ -861,6 +861,7 @@
       const TARGET_SCORE = 1150;
       const COUNTDOWN_SECONDS = 5;
       const ROCK_PENALTY = 70;
+      const SHEETS_ENDPOINT = "https://script.google.com/macros/s/AKfycbz249AuAnQyRMymMWk4vUcX3eexFZ_JEdeMkUUxtek_BdA_tl_c0_zFPk38BUHcnItlEw/exec";
       const PRIZES = ["premio 1", "premio 2", "premio 3", "premio 4", "premio 5", "premio 6"];
       const BRANCHES = [
         { name: "01 - Tacna, centro", phone: "963165116" },
@@ -1133,6 +1134,12 @@
           branchPhone,
           registeredAt: new Date().toISOString()
         };
+        sendToSheets({
+          score: 0,
+          prize: "",
+          result: "registro",
+          status: "inicio"
+        });
         closeRegister();
         startGame();
       }
@@ -1153,6 +1160,32 @@
           `Puntaje: ${score} puntos.`
         ].filter(Boolean).join(" ");
         return `https://wa.me/51${phone}?text=${encodeURIComponent(message)}`;
+      }
+
+      function sendToSheets(payload) {
+        if (!SHEETS_ENDPOINT || !currentPlayer) return;
+        const data = {
+          fullName: currentPlayer.fullName,
+          docType: currentPlayer.docType,
+          docNumber: currentPlayer.docNumber,
+          phone: currentPlayer.phone,
+          branch: currentPlayer.branch,
+          branchPhone: currentPlayer.branchPhone,
+          score,
+          prize: currentPrize,
+          result: "",
+          status: "",
+          ...payload
+        };
+
+        fetch(SHEETS_ENDPOINT, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(data)
+        }).catch(() => {
+          // El registro no debe detener el juego si la red o Apps Script falla.
+        });
       }
 
       function startGame() {
@@ -1252,11 +1285,23 @@
         cancelAnimationFrame(animationId);
         const won = score >= TARGET_SCORE;
         if (won) {
+          sendToSheets({
+            score,
+            prize: "",
+            result: "gano",
+            status: "dado desbloqueado"
+          });
           endOverlay.className = "overlay dice-overlay";
           endPanel.className = "";
           winSound();
           renderDicePanel();
         } else {
+          sendToSheets({
+            score,
+            prize: "",
+            result: "perdio",
+            status: "finalizado"
+          });
           endOverlay.className = "overlay";
           endPanel.className = "panel";
           loseSound();
@@ -1317,6 +1362,12 @@
             dice.dataset.face = String(face);
             dice.classList.remove("rolling");
             prizeResult.textContent = currentPrize;
+            sendToSheets({
+              score,
+              prize: currentPrize,
+              result: "gano",
+              status: "premio revelado"
+            });
             claimText.textContent = `Toma una captura de pantalla de este resultado y enviala al WhatsApp de la sucursal donde te atendiste: ${currentPlayer ? currentPlayer.branch : "tu sucursal"}.`;
             if (isMobileDevice() && currentPlayer && currentPlayer.branchPhone) {
               whatsappBtn.href = buildWhatsAppUrl(currentPrize);
