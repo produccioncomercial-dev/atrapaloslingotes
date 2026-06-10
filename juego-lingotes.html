@@ -496,18 +496,22 @@
     .dice-zone {
       display: grid;
       place-items: center;
-      gap: 14px;
-      margin-top: 16px;
+      align-content: start;
+      gap: 8px;
+      width: min(620px, 100%);
+      min-height: 100%;
+      margin-top: 0;
+      padding-top: clamp(8px, 3vh, 26px);
     }
 
     .dice {
       position: relative;
-      width: min(52vw, 260px);
+      width: min(34vw, 180px);
       aspect-ratio: 1;
-      border: 7px solid #fff;
+      border: 5px solid #fff;
       border-radius: 8px;
       background: linear-gradient(145deg, #fff 0%, #fff7d2 100%);
-      box-shadow: 0 24px 70px rgba(0, 0, 0, .38), inset 0 0 0 7px var(--gold);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, .34), inset 0 0 0 5px var(--gold);
       transition: transform .28s ease, filter .28s ease;
     }
 
@@ -570,19 +574,19 @@
     }
 
     .dice-title {
-      max-width: 16ch;
+      max-width: 22ch;
       color: #fff;
-      font-size: clamp(30px, 8vw, 64px);
-      font-weight: 300;
-      line-height: 1.08;
+      font-size: clamp(22px, 4.8vw, 38px);
+      font-weight: 400;
+      line-height: 1.05;
       text-align: center;
       text-transform: uppercase;
     }
 
     .claim-card {
       display: none;
-      width: min(560px, 92vw);
-      padding: 18px;
+      width: min(500px, 92vw);
+      padding: 12px;
       border: 1px solid rgba(255, 255, 255, .16);
       border-radius: 8px;
       background: rgba(255, 255, 255, .08);
@@ -594,7 +598,7 @@
     .claim-card.show {
       display: grid;
       justify-items: center;
-      gap: 12px;
+      gap: 8px;
       animation: claimIn .28s ease-out both;
     }
 
@@ -602,8 +606,8 @@
       position: relative;
       display: grid;
       place-items: center;
-      width: 58px;
-      height: 58px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       background: var(--gold);
       color: var(--brand-blue);
@@ -611,39 +615,41 @@
 
     .claim-icon::before {
       content: "";
-      width: 30px;
-      height: 22px;
+      width: 23px;
+      height: 17px;
       border-radius: 5px;
       background: var(--brand-blue);
-      box-shadow: 0 -6px 0 -2px var(--brand-blue);
+      box-shadow: 0 -5px 0 -2px var(--brand-blue);
     }
 
     .claim-icon::after {
       content: "";
       position: absolute;
-      width: 10px;
-      height: 10px;
-      border: 3px solid var(--gold);
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--gold);
       border-radius: 50%;
       background: transparent;
     }
 
     .claim-text {
-      max-width: 42ch;
+      max-width: 38ch;
       color: rgba(255, 255, 255, .88);
-      font-size: clamp(14px, 3.4vw, 17px);
+      font-size: clamp(12px, 2.8vw, 15px);
       font-weight: 400;
-      line-height: 1.45;
+      line-height: 1.28;
+      margin: 0;
     }
 
     .whatsapp-button {
       display: none;
-      min-height: 48px;
-      padding: 0 18px;
+      min-height: 40px;
+      padding: 0 16px;
       border-radius: 999px;
       background: #25d366;
       color: #06351a;
       font-weight: 950;
+      font-size: 14px;
       text-decoration: none;
       align-items: center;
       justify-content: center;
@@ -656,8 +662,8 @@
 
     .dice-overlay .prize {
       color: var(--gold);
-      font-size: clamp(34px, 10vw, 82px);
-      min-height: 1.1em;
+      font-size: clamp(26px, 6.8vw, 52px);
+      min-height: .95em;
       text-shadow: 0 10px 30px rgba(0, 0, 0, .35);
     }
 
@@ -745,6 +751,51 @@
       .brand-logo { width: min(150px, 42vw); max-height: 50px; }
       .form-grid { grid-template-columns: 1fr; }
       .register-panel { padding: 18px 14px; }
+      .dice-zone {
+        gap: 6px;
+        padding-top: 6px;
+        align-content: start;
+      }
+      .dice-title {
+        max-width: 20ch;
+        font-size: clamp(18px, 5vw, 24px);
+      }
+      .dice {
+        width: min(38vw, 128px);
+        border-width: 4px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .32), inset 0 0 0 4px var(--gold);
+      }
+      .dice-overlay .prize {
+        font-size: clamp(24px, 7vw, 34px);
+      }
+      .claim-card {
+        width: min(350px, 94vw);
+        padding: 9px;
+      }
+      .claim-card.show { gap: 6px; }
+      .claim-icon {
+        width: 34px;
+        height: 34px;
+      }
+      .claim-icon::before {
+        width: 19px;
+        height: 14px;
+      }
+      .claim-icon::after {
+        width: 6px;
+        height: 6px;
+      }
+      .claim-text {
+        max-width: 34ch;
+        font-size: 11px;
+        line-height: 1.22;
+      }
+      .whatsapp-button,
+      .claim-card .primary {
+        min-height: 36px;
+        padding: 0 14px;
+        font-size: 12px;
+      }
       .sound-toggle { right: 10px; bottom: 10px; }
     }
   </style>
@@ -1356,7 +1407,7 @@
               result: "gano",
               status: "premio revelado"
             });
-            claimText.textContent = `Toma una captura de pantalla de este resultado y enviala al WhatsApp de la sucursal donde te atendiste: ${currentPlayer ? currentPlayer.branch : "tu sucursal"}.`;
+            claimText.textContent = `Toma captura de este resultado y enviala al WhatsApp de ${currentPlayer ? currentPlayer.branch : "tu sucursal"}.`;
             if (isMobileDevice() && currentPlayer && currentPlayer.branchPhone) {
               whatsappBtn.href = buildWhatsAppUrl(currentPrize);
               whatsappBtn.classList.add("show");
