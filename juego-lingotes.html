@@ -1134,12 +1134,6 @@
           branchPhone,
           registeredAt: new Date().toISOString()
         };
-        sendToSheets({
-          score: 0,
-          prize: "",
-          result: "registro",
-          status: "inicio"
-        });
         closeRegister();
         startGame();
       }
@@ -1285,12 +1279,6 @@
         cancelAnimationFrame(animationId);
         const won = score >= TARGET_SCORE;
         if (won) {
-          sendToSheets({
-            score,
-            prize: "",
-            result: "gano",
-            status: "dado desbloqueado"
-          });
           endOverlay.className = "overlay dice-overlay";
           endPanel.className = "";
           winSound();
